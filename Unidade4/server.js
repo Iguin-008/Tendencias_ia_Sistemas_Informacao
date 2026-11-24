@@ -19,6 +19,7 @@ let itens = [];      // a agenda: { id, titulo, dia, descricao, feito }
 let snap = null;     // cópia da agenda antes da última ação (para desfazer)
 try { itens = JSON.parse(fs.readFileSync(DB, "utf8")); } catch {}
 const save = () => { fs.mkdirSync(path.dirname(DB), { recursive: true }); fs.writeFileSync(DB, JSON.stringify(itens, null, 2)); };
+const fmt = d => d.split("-").reverse().join("/");
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
 // ---------- Regras de validação (camada DECISÓRIA; valem para formulário e agente) ----------
@@ -30,9 +31,9 @@ function validDia(s) {
 // Devolve o item limpo, ou null (e registra o motivo em "log")
 function limpar(x, log) {
   const titulo = String(x.titulo || "").trim().slice(0, 100);
-  if (!titulo) { log.push("item sem título descartado"); return null; }
-  if (!validDia(x.dia)) { log.push(`"${titulo}" não foi salvo: faltou uma data válida`); return null; }
-  if (x.dia < today()) { log.push(`"${titulo}" não foi salvo: a data já passou`); return null; }
+  if (!titulo) { log.push("Faltou o título de um item."); return null; }
+  if (!validDia(x.dia)) { log.push(`Para salvar “${titulo}”, preciso da data. Qual é o dia?`); return null; }
+  if (x.dia < today()) { log.push(`A data de “${titulo}” já passou. Qual é a data certa?`); return null; }
   return { titulo, dia: x.dia, descricao: String(x.descricao || "").trim().slice(0, 200) };
 }
 const adicionar = lista => { let n = itens.reduce((m, i) => Math.max(m, i.id), 0); lista.forEach(i => itens.push({ id: ++n, feito: false, ...i })); };
@@ -44,7 +45,7 @@ async function perguntarIA(mensagem, historico) {
   const h = historico.slice(-6).map(x => `${x.r}: ${String(x.c).slice(0, 300)}`).join("\n") || "(início)"; // memória curta
   const prompt = `Você é o agente de uma agenda da faculdade. Hoje é ${today()} (formato AAAA-MM-DD).
 Extraia da mensagem os compromissos ou prazos e responda SOMENTE com JSON válido, sem markdown:
-{"intent":"criar|ajuda|desconhecido","itens":[{"titulo":"...","dia":"AAAA-MM-DD ou null","descricao":"... ou vazio"}],"reply":"resposta curta em português"}
+{"intent":"criar|ajuda|desconhecido","itens":[{"titulo":"...","dia":"AAAA-MM-DD ou null","descricao":"... ou vazio"}]}
 Regras: converta datas relativas (sexta, amanhã) para AAAA-MM-DD; se a mensagem não tiver data, use null em "dia"; no máximo 3 itens; se for um cumprimento ou um pedido de ajuda (ex.: "oi", "o que você faz?"), use intent "ajuda"; se a mensagem não for sobre prazos ou compromissos, use intent "desconhecido".
 
 Últimas trocas:
@@ -62,7 +63,7 @@ Mensagem do usuário: ${mensagem}`;
   return JSON.parse(texto);
 }
 
-const AJUDA = "Eu transformo frases em itens da agenda. Escreva o que vence e quando, por exemplo: “prova de Redes dia 3 de dezembro” ou “entregar o relatório sexta”. Posso criar até 3 itens por mensagem. Para concluir ou remover um item, use os botões da lista.";
+const AJUDA = "Eu transformo frases em itens da agenda. Escreva o que vence e quando, por exemplo: “prova de Redes dia 3 de dezembro”. Posso salvar até 3 itens por mensagem. Para concluir ou remover, use os botões da lista.";
 
 // ---------- Agente: Perceptiva -> Cognitiva -> Decisória -> Executiva ----------
 async function agente({ message, history = [] }) {
@@ -70,10 +71,10 @@ async function agente({ message, history = [] }) {
   const trace = [["Perceptiva", `recebeu: "${msg}"`]];
   if (!msg) return { reply: "Digite uma mensagem.", trace };
   if (sensivel(msg)) {
-    return { reply: "Detectei um possível dado sensível (CPF, cartão ou senha). Por privacidade, não envio isso à IA nem guardo. Reescreva sem esses dados.",
+    return { reply: "Sua mensagem parece ter CPF, cartão ou senha. Por segurança, não enviei nem guardei nada. Reescreva sem esses dados.",
       trace: [...trace, ["Cognitiva", "não executada"], ["Decisória", "regra de privacidade: dado sensível bloqueado"], ["Executiva", "nada foi enviado ou gravado"]] };
   }
-  if (!KEY) return { reply: "O servidor está sem chave de IA. Configure ANTHROPIC_API_KEY no arquivo .env.", trace };
+  if (!KEY) return { reply: "O agente está desativado porque falta a chave de IA. A agenda e o formulário continuam funcionando.", trace };
 
   const p = await perguntarIA(msg, Array.isArray(history) ? history : []);
   trace.push(["Cognitiva", `a IA interpretou a intenção como "${p.intent}"`]);
@@ -85,7 +86,7 @@ async function agente({ message, history = [] }) {
   const log = []; let novos = [];
   if (p.intent === "criar") {
     let lista = Array.isArray(p.itens) ? p.itens : [];
-    if (lista.length > 3) { log.push("limite de 3 itens por mensagem aplicado"); lista = lista.slice(0, 3); }
+    if (lista.length > 3) { log.push("Salvei apenas os 3 primeiros itens: esse é o limite por mensagem."); lista = lista.slice(0, 3); }
     novos = lista.map(x => limpar(x, log)).filter(Boolean);
   }
   trace.push(["Decisória", "conferiu título, data válida e data não passada" + (log.length ? " → " + log.join("; ") : " → tudo certo")]);
@@ -94,11 +95,12 @@ async function agente({ message, history = [] }) {
   if (novos.length) {
     snap = JSON.stringify(itens); adicionar(novos); save();
     trace.push(["Executiva", `${novos.length} item(ns) salvo(s) na agenda. Use “Desfazer” se discordar.`]);
-    reply = (typeof p.reply === "string" && p.reply) ? p.reply : `Salvei ${novos.length} item(ns) na agenda.`;
-    if (log.length) reply += "\n(" + log.join("; ") + ")";
+    const lista = novos.map(n => `${n.titulo}, ${fmt(n.dia)}`);
+    reply = novos.length === 1 ? `Anotei: ${lista[0]}.` : `Anotei ${novos.length} itens: ${lista.join("; ")}.`;
+    if (log.length) reply += " " + log.join(" ");
   } else {
     trace.push(["Executiva", "nada foi gravado"]);
-    reply = log.length ? "Não salvei nada: " + log.join("; ") + ". Pode me dizer a data?" : "Não entendi isso como um prazo ou compromisso. Exemplo: “prova de Redes dia 3 de dezembro”.";
+    reply = log.length ? log.join(" ") : "Não encontrei um prazo nessa mensagem. Tente assim: “prova de Redes dia 3 de dezembro”.";
   }
   return { reply, trace };
 }
@@ -123,7 +125,7 @@ http.createServer(async (req, res) => {
     if (p === "/api/undo" && req.method === "POST") { if (snap) { itens = JSON.parse(snap); snap = null; save(); } return json(res, 200, itens); }
     if (p === "/api/agent" && req.method === "POST") {
       try { return json(res, 200, { ...(await agente(await corpo(req))), itens }); }
-      catch (e) { console.error(e.message); return json(res, 502, { reply: "Não consegui falar com a IA agora. Nada foi alterado. Tente novamente.", trace: [] }); }
+      catch (e) { console.error(e.message); return json(res, 502, { reply: "Não consegui processar agora. Sua agenda não mudou. Tente de novo em instantes.", trace: [] }); }
     }
     // arquivos estáticos (somente a pasta public)
     const f = path.join(__dirname, "public", p === "/" ? "index.html" : p);
