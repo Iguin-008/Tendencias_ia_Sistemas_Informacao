@@ -44,8 +44,8 @@ async function perguntarIA(mensagem, historico) {
   const h = historico.slice(-6).map(x => `${x.r}: ${String(x.c).slice(0, 300)}`).join("\n") || "(início)"; // memória curta
   const prompt = `Você é o agente de uma agenda da faculdade. Hoje é ${today()} (formato AAAA-MM-DD).
 Extraia da mensagem os compromissos ou prazos e responda SOMENTE com JSON válido, sem markdown:
-{"intent":"criar|desconhecido","itens":[{"titulo":"...","dia":"AAAA-MM-DD ou null","descricao":"... ou vazio"}],"reply":"resposta curta em português"}
-Regras: converta datas relativas (sexta, amanhã) para AAAA-MM-DD; se a mensagem não tiver data, use null em "dia"; no máximo 3 itens; se a mensagem não for sobre prazos ou compromissos, use intent "desconhecido".
+{"intent":"criar|ajuda|desconhecido","itens":[{"titulo":"...","dia":"AAAA-MM-DD ou null","descricao":"... ou vazio"}],"reply":"resposta curta em português"}
+Regras: converta datas relativas (sexta, amanhã) para AAAA-MM-DD; se a mensagem não tiver data, use null em "dia"; no máximo 3 itens; se for um cumprimento ou um pedido de ajuda (ex.: "oi", "o que você faz?"), use intent "ajuda"; se a mensagem não for sobre prazos ou compromissos, use intent "desconhecido".
 
 Últimas trocas:
 ${h}
@@ -62,6 +62,8 @@ Mensagem do usuário: ${mensagem}`;
   return JSON.parse(texto);
 }
 
+const AJUDA = "Eu transformo frases em itens da agenda. Escreva o que vence e quando, por exemplo: “prova de Redes dia 3 de dezembro” ou “entregar o relatório sexta”. Posso criar até 3 itens por mensagem. Para concluir ou remover um item, use os botões da lista.";
+
 // ---------- Agente: Perceptiva -> Cognitiva -> Decisória -> Executiva ----------
 async function agente({ message, history = [] }) {
   const msg = String(message || "").trim().slice(0, 500);
@@ -75,6 +77,10 @@ async function agente({ message, history = [] }) {
 
   const p = await perguntarIA(msg, Array.isArray(history) ? history : []);
   trace.push(["Cognitiva", `a IA interpretou a intenção como "${p.intent}"`]);
+
+  if (p.intent === "ajuda") {
+    return { reply: AJUDA, trace: [...trace, ["Decisória", "intenção de ajuda: resposta fixa, sem alterar a agenda"], ["Executiva", "nada foi gravado"]] };
+  }
 
   const log = []; let novos = [];
   if (p.intent === "criar") {
