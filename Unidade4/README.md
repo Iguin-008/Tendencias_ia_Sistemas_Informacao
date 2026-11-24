@@ -22,15 +22,22 @@ node server.js
 
 Abra http://localhost:3000. Sem a chave, o formulário e a agenda funcionam, e só o agente fica desativado.
 
-A chave fica apenas no servidor e o `.env` está no `.gitignore`: **nunca envie o `.env` ao GitHub**.
+A chave fica apenas no servidor e o `.env` está no `.gitignore`
 
 ## Arquivos
 
 ```
 server.js           servidor: agente de 4 camadas e regras de validação
 public/index.html   página: formulário, conversa com o agente e agenda
+docs/               documentação do projeto
 ```
 
 ## Documentação
 
-Será adicionada na pasta `docs/`.
+Na pasta `docs/`, seguindo o fluxo de trabalho do SERPROBOT:
+
+- `Documento_de_Visao.md`: problema, visão geral, restrições, arquitetura, usuários e referências (etapa *Entender a Necessidade*).
+- `Estrutura_do_Projeto.md`: organização do repositório, correspondência com as pastas sugeridas e situação das etapas (etapa *Montar Estrutura*).
+- `Persona_e_Identidade_Visual.md`: persona, tom de voz, linha artística, cores e tipografia (etapa *Id. Visual e Persona*).
+- `Modelagem_do_Chatbot.md`: estratégia, intenções, entidades, fluxos, diálogos de amostra e casos de teste (etapa *Modelar o Chatbot*).
+- `UX_Writing.md`: revisão das mensagens do agente com os princípios de UX Writing (etapa *UX Writing*).
