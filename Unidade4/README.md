@@ -37,6 +37,7 @@ docs/               documentação do projeto
 Na pasta `docs/`, seguindo o fluxo de trabalho do SERPROBOT:
 
 - `Documento_de_Visao.md`: problema, visão geral, restrições, arquitetura, usuários e referências (etapa *Entender a Necessidade*).
+- `Acervo.md`: fontes de apoio e conjunto de frases de exemplo (etapa *Coletar Acervo*).
 - `Estrutura_do_Projeto.md`: organização do repositório, correspondência com as pastas sugeridas e situação das etapas (etapa *Montar Estrutura*).
 - `Persona_e_Identidade_Visual.md`: persona, tom de voz, linha artística, cores e tipografia (etapa *Id. Visual e Persona*).
 - `Modelagem_do_Chatbot.md`: estratégia, intenções, entidades, fluxos, diálogos de amostra e casos de teste (etapa *Modelar o Chatbot*).
