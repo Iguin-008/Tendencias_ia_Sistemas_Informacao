@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anota Aí</title>
+<style>
+:root{color-scheme:light;--bg:#f0e7d6;--card:#ffffff;--tx:#2a2118;--mut:#65594a;--bd:#cbbca1;--pri:#7a4e2d;--ok:#4a7a4a;--warn:#b34a2e;--chip:#eadfc8}
+*{box-sizing:border-box}
+input[type=checkbox]{accent-color:var(--pri)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header,main{max-width:1000px;margin:0 auto;padding:16px 20px 0}
+h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:var(--mut);font-size:13px}
+main{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:28px}
+@media(max-width:760px){main{grid-template-columns:1fr}}
+section{background:var(--card);border:1px solid var(--bd);box-shadow:0 1px 4px rgba(70,50,20,.14);border-radius:14px;padding:14px;display:flex;flex-direction:column}
+h2{margin:0 0 10px;font-size:15px}
+#chat{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.m{padding:8px 11px;border-radius:12px;max-width:92%;white-space:pre-wrap}
+.u{align-self:flex-end;background:var(--pri);color:#fff}.a{align-self:flex-start;background:var(--chip)}
+details{margin-top:6px;font-size:12px;color:var(--mut)}summary{cursor:pointer;color:var(--pri)}
+.tr{list-style:none;padding:0;margin:4px 0 0}.tr li{margin:3px 0}.tr b{color:var(--tx)}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+input{padding:9px 11px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit;min-width:0}
+input[type=text]{flex:1;min-width:140px}
+button{padding:9px 13px;border:0;border-radius:10px;background:var(--pri);color:#fff;font:inherit;cursor:pointer}
+button.g{background:var(--chip);color:var(--tx)}button:disabled{opacity:.5}
+.t{display:flex;gap:9px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}
+.t.d .tt{text-decoration:line-through;color:var(--mut)}.tt{font-weight:600}
+.meta{font-size:12px;color:var(--mut)}.desc{font-size:13px}
+.late{color:var(--warn);font-weight:600}
+.x{margin-left:auto;background:none;color:var(--mut);padding:2px 6px}
+.note{font-size:12px;color:var(--mut);padding-top:10px}
+</style>
+</head>
+<body>
+<header><h1>Anota Aí</h1><p>Seus prazos em um só lugar. Adicione pelo formulário ou escreva uma frase para o agente.</p></header>
+<main>
+<div style="display:flex;flex-direction:column;gap:16px">
+<section>
+<h2>Novo item (manual)</h2>
+<div class="row" style="margin-top:0">
+<input type="text" id="ft" placeholder="Título (ex.: Entregar relatório)" maxlength="100">
+<input type="date" id="fd">
+</div>
+<div class="row">
+<input type="text" id="fx" placeholder="Descrição (opcional)" maxlength="200">
+<button id="fb">Adicionar</button>
+</div>
+</section>
+<section>
+<h2>Conversa com o agente</h2>
+<div id="chat" aria-live="polite"></div>
+<div class="row"><input type="text" id="in" placeholder="Ex.: prova de Redes dia 3 de dezembro" maxlength="500"><button id="send">Enviar</button></div>
+</section>
+</div>
+<section>
+<h2>Minha agenda <button class="g" id="undo" style="float:right;font-size:12px;padding:4px 9px">Desfazer última ação</button></h2>
+<div id="list"></div>
+<div class="note">Privacidade: o agente recebe só a sua mensagem e as últimas trocas. CPF, cartão e senha são bloqueados antes do envio.</div>
+</section>
+</main>
+<script>
+const $ = i => document.getElementById(i);
+let itens = [], hist = [];
+const fmt = d => d.split("-").reverse().join("/");
+function quando(dia) {
+  const h = new Date(); h.setHours(12, 0, 0, 0);
+  const n = Math.round((new Date(dia + "T12:00:00") - h) / 86400000);
+  if (n < 0) return [`atrasado há ${-n} dia(s)`, true];
+  if (n === 0) return ["é hoje", false];
+  if (n === 1) return ["é amanhã", false];
+  return [`faltam ${n} dias`, false];
+}
+async function api(url, method = "GET", data) {
+  const r = await fetch(url, { method, headers: { "content-type": "application/json" }, body: data ? JSON.stringify(data) : undefined });
+  return { ok: r.ok, data: await r.json() };
+}
+function render() {
+  const el = $("list"); el.textContent = "";
+  if (!itens.length) { el.textContent = "Nenhum item ainda."; return; }
+  [...itens].sort((a, b) => (a.feito - b.feito) || a.dia.localeCompare(b.dia)).forEach(i => {
+    const d = document.createElement("div"); d.className = "t" + (i.feito ? " d" : "");
+    const c = document.createElement("input"); c.type = "checkbox"; c.checked = i.feito;
+    c.onchange = async () => { itens = (await api("/api/agenda/" + i.id, "PATCH")).data; render(); };
+    const b = document.createElement("div");
+    const tt = document.createElement("div"); tt.className = "tt"; tt.textContent = i.titulo;
+    const [txt, atrasado] = quando(i.dia);
+    const mt = document.createElement("div"); mt.className = "meta";
+    mt.append(`${fmt(i.dia)} · `);
+    const sp = document.createElement("span"); if (atrasado && !i.feito) sp.className = "late"; sp.textContent = txt; mt.append(sp);
+    b.append(tt, mt);
+    if (i.descricao) { const ds = document.createElement("div"); ds.className = "desc"; ds.textContent = i.descricao; b.append(ds); }
+    const x = document.createElement("button"); x.className = "x"; x.textContent = "✕"; x.title = "Remover";
+    x.onclick = async () => { itens = (await api("/api/agenda/" + i.id, "DELETE")).data; render(); };
+    d.append(c, b, x); el.append(d);
+  });
+}
+function add(cls, txt, trace) {
+  const d = document.createElement("div"); d.className = "m " + cls;
+  const p = document.createElement("div"); p.textContent = txt; d.append(p);
+  if (trace && trace.length) {
+    const det = document.createElement("details"), sm = document.createElement("summary");
+    sm.textContent = "Ver como o agente decidiu (4 camadas)"; det.append(sm);
+    const ul = document.createElement("ul"); ul.className = "tr";
+    trace.forEach(([k, v]) => { const li = document.createElement("li"), b = document.createElement("b"); b.textContent = k + ": "; li.append(b, v); ul.append(li); });
+    det.append(ul); d.append(det);
+  }
+  $("chat").append(d); $("chat").scrollTop = $("chat").scrollHeight;
+}
+async function send() {
+  const txt = $("in").value.trim(); if (!txt) return;
+  $("in").value = ""; add("u", txt); $("send").disabled = true;
+  try {
+    const { data: r } = await api("/api/agent", "POST", { message: txt, history: hist });
+    if (r.itens) { itens = r.itens; render(); }
+    hist.push({ r: "Usuário", c: txt }, { r: "Agente", c: r.reply }); hist = hist.slice(-10);
+    add("a", r.reply, r.trace);
+  } catch { add("a", "Erro de conexão com o servidor."); }
+  $("send").disabled = false; $("in").focus();
+}
+$("send").onclick = send;
+$("in").onkeydown = e => { if (e.key === "Enter") send(); };
+$("undo").onclick = async () => { itens = (await api("/api/undo", "POST")).data; render(); add("a", "Ação desfeita."); };
+$("fb").onclick = async () => {
+  const r = await api("/api/agenda", "POST", { titulo: $("ft").value, dia: $("fd").value, descricao: $("fx").value });
+  if (r.ok) { itens = r.data; render(); $("ft").value = ""; $("fd").value = ""; $("fx").value = ""; }
+  else add("a", "Não salvei: " + (r.data.error || "dados inválidos") + ".");
+};
+(async () => { itens = (await api("/api/agenda")).data; render(); add("a", "Olá! Sou o agente da agenda. Escreva um prazo ou compromisso (ex.: “entregar o relatório sexta”) e eu salvo para você."); })();
+</script>
+</body>
+</html>
