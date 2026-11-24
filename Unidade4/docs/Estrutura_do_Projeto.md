@@ -24,6 +24,7 @@ unidade-4/
 └── docs/
     ├── Estrutura_do_Projeto.md        este documento (Montar Estrutura)
     ├── Documento_de_Visao.md          Entender a Necessidade
+    ├── Acervo.md                      Coletar Acervo
     ├── Persona_e_Identidade_Visual.md Id. Visual e Persona
     ├── Modelagem_do_Chatbot.md        Modelar o Chatbot
     └── UX_Writing.md                  UX Writing
@@ -34,7 +35,7 @@ unidade-4/
 | Pasta sugerida pelo SERPROBOT | No Anota Aí | Onde está |
 |---|---|---|
 | Acervo Oficial (insumos do cliente) | **Não se aplica.** Não há cliente nem base de conhecimento recebida: o agente só extrai dados da frase | — |
-| Acervo Complementar (insumos pesquisados pela equipe) | Material de apoio: guia da disciplina e documentação do SERPROBOT | `docs/Documento_de_Visao.md`, seção 8 (Referências) |
+| Acervo Complementar (insumos pesquisados pela equipe) | Material de apoio: guia da disciplina, documentação do SERPROBOT e LGPD; inclui o conjunto de frases de exemplo | `docs/Acervo.md` |
 | Acompanhamento (cronogramas e controle) | Calendário da disciplina e situação das etapas | Seção 4 deste documento |
 | Reuniões | **Sem registro formal.** O trabalho foi combinado entre os dois integrantes | — |
 | Id. Visual e Persona | Persona, tom de voz, linha artística, cores e tipografia | `docs/Persona_e_Identidade_Visual.md` |
@@ -63,7 +64,7 @@ unidade-4/
 | 1 | Entender a Necessidade | Feita | `Documento_de_Visao.md` |
 | 2 | Montar Estrutura | Feita | Este documento |
 | 3 | Id. Visual e Persona | Feita | `Persona_e_Identidade_Visual.md` |
-| 4 | Coletar acervo | A fazer | — |
+| 4 | Coletar acervo | Feita | `Acervo.md` |
 | 5 | Modelar o Chatbot | Feita | `Modelagem_do_Chatbot.md` |
 | 6 | UX Writing | Feita | `UX_Writing.md` |
 | 7 | Implementar o Chatbot | Código pronto; documentação a fazer | `server.js`, `public/index.html` |
