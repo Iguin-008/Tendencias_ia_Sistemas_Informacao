@@ -121,11 +121,11 @@ async function send() {
 }
 $("send").onclick = send;
 $("in").onkeydown = e => { if (e.key === "Enter") send(); };
-$("undo").onclick = async () => { itens = (await api("/api/undo", "POST")).data; render(); add("a", "Ação desfeita."); };
+$("undo").onclick = async () => { itens = (await api("/api/undo", "POST")).data; render(); add("a", "Pronto, desfiz a última ação."); };
 $("fb").onclick = async () => {
   const r = await api("/api/agenda", "POST", { titulo: $("ft").value, dia: $("fd").value, descricao: $("fx").value });
   if (r.ok) { itens = r.data; render(); $("ft").value = ""; $("fd").value = ""; $("fx").value = ""; }
-  else add("a", "Não salvei: " + (r.data.error || "dados inválidos") + ".");
+  else add("a", r.data.error || "Não consegui salvar. Confira os campos.");
 };
 (async () => { itens = (await api("/api/agenda")).data; render(); add("a", "Olá! Sou o agente da agenda. Escreva um prazo ou compromisso (ex.: “entregar o relatório sexta”) e eu salvo para você."); })();
 </script>
