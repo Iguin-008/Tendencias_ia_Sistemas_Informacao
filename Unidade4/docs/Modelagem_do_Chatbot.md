@@ -10,7 +10,7 @@ Este documento organiza como o agente do Anota Aí interage com o usuário: estr
 
 A estratégia é **híbrida**:
 
-- **Regras fixas (diálogo):** mensagens de ajuda, de erro, de bloqueio de dado sensível e a validação dos dados (título, data válida, data não passada) são definidas pelo servidor e sempre iguais.
+- **Regras fixas (diálogo):** todas as mensagens ao usuário (ajuda, erro, bloqueio de dado sensível e confirmação) e a validação dos dados (título, data válida, data não passada) são definidas pelo servidor e sempre iguais.
 - **IA generativa:** usada só para **interpretar a frase** do usuário e extrair título, dia e descrição. A IA não responde perguntas gerais nem altera a agenda: quem valida e grava é o servidor.
 
 A documentação recomenda começar por diálogos e usar IA generativa para ampliar a capacidade do chatbot. No Anota Aí, a IA entra no ponto em que regras fixas seriam inviáveis: entender frases livres e converter datas como "sexta" ou "amanhã".
@@ -33,12 +33,12 @@ Tema: **Agenda de prazos**
 
 | Assunto | Intenção | Pergunta (exemplos de treino) | Resposta | Entidade | Menu de Opções |
 |---|---|---|---|---|---|
-| Registrar prazo | `criar` | "Prova de Redes dia 3 de dezembro", "Entregar o relatório sexta", "Reunião do grupo amanhã, levar o notebook" | Confirmação curta da IA; o item aparece na agenda | `titulo`, `dia`, `descricao` | Não possui |
-| Registrar prazo (sem data) | `criar` | "Estudar para a prova de Redes" | "Não salvei nada: "Estudar para a prova de Redes" não foi salvo: faltou uma data válida. Pode me dizer a data?" | `titulo` (sem `dia`) | Não possui |
-| Registrar prazo (data passada) | `criar` | "Entregar o trabalho dia 1 de janeiro de 2020" | "Não salvei nada: … não foi salvo: a data já passou. Pode me dizer a data?" | `titulo`, `dia` | Não possui |
+| Registrar prazo | `criar` | "Prova de Redes dia 3 de dezembro", "Entregar o relatório sexta", "Reunião do grupo amanhã, levar o notebook" | Confirmação montada pelo servidor ("Anotei: Prova de Redes, 03/12/2026."); o item aparece na agenda | `titulo`, `dia`, `descricao` | Não possui |
+| Registrar prazo (sem data) | `criar` | "Estudar para a prova de Redes" | "Para salvar “Estudar para a prova de Redes”, preciso da data. Qual é o dia?" | `titulo` (sem `dia`) | Não possui |
+| Registrar prazo (data passada) | `criar` | "Entregar o trabalho dia 1 de janeiro de 2020" | "A data de “…” já passou. Qual é a data certa?" | `titulo`, `dia` | Não possui |
 | Ajuda e boas-vindas | `ajuda` | "Oi", "Olá", "O que você faz?", "Como funciona?" | Texto fixo explicando o que o agente faz, com um exemplo | Nenhuma | Não possui |
-| Fora do escopo | `desconhecido` | "Qual a capital da França?", "Me conta uma piada" | "Não entendi isso como um prazo ou compromisso. Exemplo: “prova de Redes dia 3 de dezembro”." | Nenhuma | Não possui |
-| Dado sensível (regra anterior à IA) | Sem intenção (bloqueio) | "Meu CPF é 123.456.789-09", "senha: 1234" | "Detectei um possível dado sensível (CPF, cartão ou senha). Por privacidade, não envio isso à IA nem guardo. Reescreva sem esses dados." | `cpf`, `cartao`, `senha` (padrão) | Não possui |
+| Fora do escopo | `desconhecido` | "Qual a capital da França?", "Me conta uma piada" | "Não encontrei um prazo nessa mensagem. Tente assim: “prova de Redes dia 3 de dezembro”." | Nenhuma | Não possui |
+| Dado sensível (regra anterior à IA) | Sem intenção (bloqueio) | "Meu CPF é 123.456.789-09", "senha: 1234" | "Sua mensagem parece ter CPF, cartão ou senha. Por segurança, não enviei nem guardei nada. Reescreva sem esses dados." | `cpf`, `cartao`, `senha` (padrão) | Não possui |
 
 O **menu de opções** não foi adotado: a interação é por texto livre, e as ações que não são conversa (concluir, remover, desfazer) ficam em botões da interface.
 
@@ -80,37 +80,37 @@ flowchart TD
 
 ## 7. Diálogos de amostra
 
-As respostas da IA variam um pouco; as mensagens de erro, ajuda e bloqueio são fixas.
+Todas as mensagens ao usuário são fixas e montadas pelo servidor; a IA só interpreta a frase. A revisão dessas mensagens está em `UX_Writing.md`.
 
 ### Boas-vindas
 > **Bot:** Olá! Sou o agente da agenda. Escreva um prazo ou compromisso (ex.: “entregar o relatório sexta”) e eu salvo para você.
 
 ### Caminho feliz
 > **Pessoa:** Prova de Redes dia 3 de dezembro
-> **Bot:** Anotei: prova de Redes em 03/12.
+> **Bot:** Anotei: Prova de Redes, 03/12/2026.
 > *(painel: Perceptiva recebeu a mensagem; Cognitiva interpretou "criar"; Decisória conferiu título e data; Executiva salvou 1 item e guardou cópia para desfazer)*
 
 ### Frase sem data
 > **Pessoa:** Estudar para a prova de Redes
-> **Bot:** Não salvei nada: "Estudar para a prova de Redes" não foi salvo: faltou uma data válida. Pode me dizer a data?
+> **Bot:** Para salvar “Estudar para a prova de Redes”, preciso da data. Qual é o dia?
 > **Pessoa:** Dia 3 de dezembro
-> **Bot:** *(espera-se que, com o histórico, a IA una as duas mensagens e salve o item; isso deve ser confirmado nos testes)*
+> **Bot:** *(espera-se que, com o histórico, a IA una as duas mensagens e salve o item, respondendo "Anotei: Estudar para a prova de Redes, 03/12/2026."; isso deve ser confirmado nos testes)*
 
 ### Ajuda
 > **Pessoa:** O que você faz?
-> **Bot:** Eu transformo frases em itens da agenda. Escreva o que vence e quando, por exemplo: “prova de Redes dia 3 de dezembro” ou “entregar o relatório sexta”. Posso criar até 3 itens por mensagem. Para concluir ou remover um item, use os botões da lista.
+> **Bot:** Eu transformo frases em itens da agenda. Escreva o que vence e quando, por exemplo: “prova de Redes dia 3 de dezembro”. Posso salvar até 3 itens por mensagem. Para concluir ou remover, use os botões da lista.
 
 ### Fora do escopo
 > **Pessoa:** Qual a capital da França?
-> **Bot:** Não entendi isso como um prazo ou compromisso. Exemplo: “prova de Redes dia 3 de dezembro”.
+> **Bot:** Não encontrei um prazo nessa mensagem. Tente assim: “prova de Redes dia 3 de dezembro”.
 
 ### Dado sensível
 > **Pessoa:** Meu CPF é 123.456.789-09, anota a prova de sexta
-> **Bot:** Detectei um possível dado sensível (CPF, cartão ou senha). Por privacidade, não envio isso à IA nem guardo. Reescreva sem esses dados.
+> **Bot:** Sua mensagem parece ter CPF, cartão ou senha. Por segurança, não enviei nem guardei nada. Reescreva sem esses dados.
 
 ### Falha da IA
 > **Pessoa:** Entregar o relatório sexta
-> **Bot:** Não consegui falar com a IA agora. Nada foi alterado. Tente novamente.
+> **Bot:** Não consegui processar agora. Sua agenda não mudou. Tente de novo em instantes.
 
 ### Fluxo de saída
 O Anota Aí não tem uma despedida formal. Os itens ficam salvos no arquivo da agenda, e a última ação pode ser desfeita pelo botão "Desfazer última ação".
