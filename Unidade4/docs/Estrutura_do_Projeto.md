@@ -24,6 +24,7 @@ unidade-4/
 └── docs/
     ├── Estrutura_do_Projeto.md        este documento (Montar Estrutura)
     ├── Documento_de_Visao.md          Entender a Necessidade
+    ├── Analise_Etica.md               viés algorítmico e responsabilidade social
     ├── Acervo.md                      Coletar Acervo
     ├── Persona_e_Identidade_Visual.md Id. Visual e Persona
     ├── Modelagem_do_Chatbot.md        Modelar o Chatbot
@@ -41,7 +42,7 @@ unidade-4/
 | Id. Visual e Persona | Persona, tom de voz, linha artística, cores e tipografia | `docs/Persona_e_Identidade_Visual.md` |
 | Arquitetura da Informação | Arquitetura do sistema e linhas temáticas (tema, assunto, intenção) | `docs/Documento_de_Visao.md` (seção 4) e `docs/Modelagem_do_Chatbot.md` (seção 2) |
 | Modelagem | Intenções, entidades, variáveis, fluxos e diálogos de amostra | `docs/Modelagem_do_Chatbot.md` |
-| Testes | Tabela de casos de teste | `docs/Modelagem_do_Chatbot.md` (seção 9) |
+| Testes | Tabela de casos de teste e testes de viés/adversariais | `docs/Modelagem_do_Chatbot.md` (seção 9) e `docs/Analise_Etica.md` (seções 5 e 6) |
 | Divulgação | **Não se aplica.** O `README.md` faz o papel de apresentação | `README.md` |
 | Entregas | A própria pasta `unidade-4` no GitHub, cujo link é registrado na tabela da professora | Repositório da disciplina |
 | Versões do modelo | Histórico de commits do GitHub; o modelo de IA é configurável pela variável `MODEL` do arquivo `.env`; o prompt fica em `server.js` | Repositório e `server.js` |
@@ -67,11 +68,11 @@ unidade-4/
 | 4 | Coletar acervo | Feita | `Acervo.md` |
 | 5 | Modelar o Chatbot | Feita | `Modelagem_do_Chatbot.md` |
 | 6 | UX Writing | Feita | `UX_Writing.md` |
-| 7 | Implementar o Chatbot | Código pronto; documentação a fazer | `server.js`, `public/index.html` |
-| 8 | Testar o Chatbot | A fazer (tabela de testes criada, resultados pendentes) | `Modelagem_do_Chatbot.md`, seção 9 |
-| 9 | Homologar o Chatbot | A fazer | — |
-| 10 | Implantar o Chatbot | A fazer | — |
-| 11 | Realizar Curadoria | A fazer | — |
+| 7 | Implementar o Chatbot | Feita (código e README) | `server.js`, `public/index.html`, `README.md` |
+| 8 | Testar o Chatbot | Feita: casos executados em 24/11 (interpretação feita por assistente de IA em conversa, sem a API paga; ver método) | `Modelagem_do_Chatbot.md`, seção 9 |
+| 9 | Homologar o Chatbot | Não se aplica (sem cliente) | — |
+| 10 | Implantar o Chatbot | Não se aplica (roda localmente) | — |
+| 11 | Realizar Curadoria | Não se aplica (sem conversas reais) | — |
 
 ## 5. Partes do modelo que não se aplicam a este projeto
 
