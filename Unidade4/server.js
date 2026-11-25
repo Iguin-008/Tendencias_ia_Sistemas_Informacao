@@ -76,7 +76,9 @@ async function agente({ message, history = [] }) {
   }
   if (!KEY) return { reply: "O agente está desativado porque falta a chave de IA. A agenda e o formulário continuam funcionando.", trace };
 
-  const p = await perguntarIA(msg, Array.isArray(history) ? history : []);
+  // Privacidade: descarta do histórico qualquer trecho com dado sensível (o histórico vem do navegador)
+  const hist = (Array.isArray(history) ? history : []).filter(x => x && !sensivel(String(x.c || "")));
+  const p = await perguntarIA(msg, hist);
   trace.push(["Cognitiva", `a IA interpretou a intenção como "${p.intent}"`]);
 
   if (p.intent === "ajuda") {
