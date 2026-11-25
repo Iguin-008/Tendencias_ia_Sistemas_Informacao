@@ -2,6 +2,8 @@
 
 Os prazos da faculdade ficam espalhados no WhatsApp, no portal e nas anotações. O **Anota Aí** junta tudo em **uma agenda simples**: cada item tem **título, dia e descrição**.
 
+**Demonstração online:** https://iguin-008.github.io/Tendencias_ia_Sistemas_Informacao/Unidade4/demo/
+
 Há duas formas de adicionar um item:
 
 1. **Formulário:** preencha título, dia e descrição (não usa IA).
