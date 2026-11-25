@@ -10,6 +10,50 @@ Há duas formas de adicionar um item:
 Integrantes: Igor Almeida dos Santos e Thomas Kristyann Santos Dias
 Disciplina: Tendências em Ciência da Computação (Unidade 4)
 
+## Como funciona
+
+A IA **só interpreta** a frase. Quem valida e grava é o servidor, em quatro camadas:
+
+| Camada | O que faz |
+|---|---|
+| Perceptiva | Recebe a mensagem, limita o tamanho e bloqueia CPF, cartão e senha |
+| Cognitiva | A IA identifica a intenção e extrai título, dia e descrição |
+| Decisória | O servidor confere título, data válida e data não passada, e limita a 3 itens |
+| Executiva | O servidor salva na agenda e guarda uma cópia para desfazer |
+
+```mermaid
+flowchart LR
+  U[Usuário] -->|formulário ou frase| P[Página web]
+  P --> S[Servidor Node.js]
+  S -->|texto da frase| IA[API de IA]
+  IA -->|JSON interpretado| S
+  S -->|valida e grava| D[(data/agenda.json)]
+  S -->|resposta e painel das 4 camadas| P
+```
+
+Escolhas de projeto: todas as mensagens que o usuário lê são escritas pelo grupo (a IA não gera texto de resposta), a última ação pode ser desfeita, e o painel "Ver como o agente decidiu" mostra cada camada.
+
+## Ferramentas utilizadas
+
+| Ferramenta | Para que serve no projeto |
+|---|---|
+| Node.js 18+ | Servidor, regras de validação e agente (sem bibliotecas externas) |
+| API de IA da Anthropic (modelo configurável em `MODEL`) | Interpretar a frase e extrair título, dia e descrição |
+| HTML, CSS e JavaScript | Página com formulário, conversa e agenda |
+| SERPROBOT (documentação) | **Referência de método**: etapas do fluxo de trabalho e conceitos de intenção, entidade e variável. O projeto não foi construído na plataforma |
+| GitHub | Repositório e entrega da disciplina |
+
+## Prints do sistema
+
+> Substituir esta tabela pelos prints reais antes de entregar (salvar em `docs/img/`).
+
+| Tela | Arquivo |
+|---|---|
+| Agenda com itens | `docs/img/agenda.png` |
+| Agente criando um item | `docs/img/agente-criar.png` |
+| Painel das 4 camadas aberto | `docs/img/agente-camadas.png` |
+| Bloqueio de CPF | `docs/img/agente-bloqueio.png` |
+
 ## Como rodar
 
 Requisito: Node.js 18 ou superior (não há nada para instalar).
@@ -22,7 +66,15 @@ node server.js
 
 Abra http://localhost:3000. Sem a chave, o formulário e a agenda funcionam, e só o agente fica desativado.
 
-A chave fica apenas no servidor e o `.env` está no `.gitignore`
+A chave fica apenas no servidor e o `.env` está no `.gitignore`: **nunca envie o `.env` ao GitHub**.
+
+## Ética e limites
+
+- A IA não tem poder de gravar, apagar ou concluir itens: só interpreta. Toda ação do agente pode ser desfeita.
+- O sistema bloqueia CPF, cartão e senha antes de enviar qualquer coisa à IA. **Não bloqueia** e-mail, telefone com espaços nem nomes de pessoas.
+- A interpretação pode errar (datas ambíguas, gírias, escrita informal). Confira sempre a confirmação.
+- Foi testado apenas pelo grupo, com apoio de um assistente de IA no lugar da API paga, e sem usuários externos. Não há login e os dados ficam em um arquivo local sem criptografia.
+- A análise completa de vieses, impactos e responsabilidade social está em `docs/Analise_Etica.md`.
 
 ## Arquivos
 
@@ -42,3 +94,8 @@ Na pasta `docs/`, seguindo o fluxo de trabalho do SERPROBOT:
 - `Persona_e_Identidade_Visual.md`: persona, tom de voz, linha artística, cores e tipografia (etapa *Id. Visual e Persona*).
 - `Modelagem_do_Chatbot.md`: estratégia, intenções, entidades, fluxos, diálogos de amostra e casos de teste (etapa *Modelar o Chatbot*).
 - `UX_Writing.md`: revisão das mensagens do agente com os princípios de UX Writing (etapa *UX Writing*).
+- `Analise_Etica.md`: vieses, avaliação crítica, frameworks éticos, responsabilidade social e testes de viés e adversariais (aula de 19/11).
+
+## Nota sobre o uso de IA
+
+Parte do código e da documentação deste projeto foi elaborada com apoio de um assistente de IA (Claude, da Anthropic) e revisada pelo grupo.
