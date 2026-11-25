@@ -7,8 +7,12 @@ Há duas formas de adicionar um item:
 1. **Formulário:** preencha título, dia e descrição (não usa IA).
 2. **Agente de IA:** escreva uma frase, como "prova de Redes dia 3 de dezembro", e o agente preenche os campos e salva.
 
-Integrantes: Igor Almeida dos Santos e Thomas Kristyann Santos Dias
-Disciplina: Tendências em Ciência da Computação (Unidade 4)
+**Disciplina:** Tendências em Ciência da Computação — Unidade 4
+
+## Integrantes
+
+- **Igor Almeida dos Santos**
+- **Thomas Kristyann Santos Dias**
 
 ## Como funciona
 
