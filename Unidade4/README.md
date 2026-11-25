@@ -45,14 +45,15 @@ Escolhas de projeto: todas as mensagens que o usuário lê são escritas pelo gr
 
 ## Prints do sistema
 
-> Substituir esta tabela pelos prints reais antes de entregar (salvar em `docs/img/`).
+### Agenda com prazos cadastrados pelo formulário
 
-| Tela | Arquivo |
-|---|---|
-| Agenda com itens | `docs/img/agenda.png` |
-| Agente criando um item | `docs/img/agente-criar.png` |
-| Painel das 4 camadas aberto | `docs/img/agente-camadas.png` |
-| Bloqueio de CPF | `docs/img/agente-bloqueio.png` |
+![Tela do Anota Aí com o formulário, o chat e a lista de prazos](docs/img/agenda.png)
+
+### Bloqueio de CPF fictício no chat
+
+![Resposta de bloqueio com o painel das etapas do agente aberto](docs/img/bloqueio.png)
+
+O agente identificou o padrão de CPF na mensagem e interrompeu o fluxo antes de chamar a IA.
 
 ## Como rodar
 
